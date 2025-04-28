@@ -1,0 +1,55 @@
+<footer class="footer-container">
+    <div class="footer-row">
+      <div class="footer-left">
+        <b class="text-danger">&copy; 2025 Wanderheavn All Rights Recieved</b><a href="/privacy">Privacy</a>  <a href="/terms">Terms</a>  <a href="/company">Company details</a>
+      </div>
+      <div class="footer-right">
+        <b>
+        <a href="/listings">Explore</a>
+        </b>
+      </div>
+    </div>
+  </footer>
+  
+  <style>
+    .footer-container {
+      border-top: 1px solid #ddd;
+      padding: 20px 40px;
+      font-size: 14px;
+      background-color: #fff;
+    }
+  
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+  
+    .footer-left, .footer-center, .footer-right {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+  
+    .footer-center a,
+    .footer-left a,
+    .footer-right a {
+      text-decoration: none;
+      color: #222;
+    }
+  
+    .footer-right i {
+      margin-right: 5px;
+    }
+  
+    @media (max-width: 768px) {
+      .footer-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+  
