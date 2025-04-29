@@ -376,3 +376,111 @@ module.exports.viewListing = async (req, res) => {
         res.redirect("/host/manage-listings");
     }
 };
+const SibApiV3Sdk = require('sib-api-v3-sdk'); // Brevo SDK
+
+// Configure Brevo
+const brevoClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = brevoClient.authentications['api-key'];
+apiKey.apiKey = process.env.SIB_API_KEY; // Your Brevo API Key
+const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Generate 6-digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// Step 1: Forgot Password → Generate & Send OTP
+module.exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const host = await Host.findOne({ email });
+
+    if (!host) {
+        req.flash('error', 'No host account found with that email.');
+        return res.redirect('/host/login');
+    }
+
+    const otp = generateOTP();
+    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 min expiry
+
+    host.otp = otp;
+    host.otpExpires = otpExpires;
+    await host.save();
+
+    const sendSmtpEmail = {
+        sender: { name: 'WanderHeavn Support', email: 'wanderheavn2025@gmail.com' },
+        to: [{ email: host.email }],
+        subject: 'Password Reset OTP',
+        htmlContent: `
+            <h2>Forgot your password?</h2>
+            <p>Use the following OTP to reset your password:</p>
+            <h3>${otp}</h3>
+            <p>This OTP will expire in 10 minutes.</p>
+        `,
+    };
+
+    await tranEmailApi.sendTransacEmail(sendSmtpEmail);
+
+    req.flash('success', 'OTP sent to your email.');
+    res.redirect('/hosts/verify-otp');
+};
+
+// Step 2: Show OTP Verification Form
+module.exports.showVerifyOtpForm = (req, res) => {
+    res.render('hosts/verify-otp'); // Make sure this view exists
+};
+
+// Step 2: Verify OTP
+module.exports.verifyOtp = async (req, res) => {
+    const { otp } = req.body;
+    const host = await Host.findOne({
+        otp,
+        otpExpires: { $gt: Date.now() }
+    });
+
+    if (!host) {
+        req.flash('error', 'Invalid or expired OTP.');
+        return res.redirect('/hosts/verify-otp');
+    }
+
+    res.render('hosts/reset-password', { userId: host._id }); // Pass host ID
+};
+
+// Step 3: Reset Password
+module.exports.resetPassword = async (req, res) => {
+    const { userId, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+        req.flash('error', 'Passwords do not match.');
+        return res.redirect('back');
+    }
+
+    try {
+        const host = await Host.findById(userId);
+        if (!host) {
+            req.flash('error', 'Host not found.');
+            return res.redirect('/host/login');
+        }
+
+        const { error } = await Host.authenticate()(host.username, password);
+        if (!error) {
+            req.flash('error', 'Use a different password than your current one.');
+            return res.redirect('back');
+        }
+
+        await new Promise((resolve, reject) => {
+            host.setPassword(password, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        host.otp = undefined;
+        host.otpExpires = undefined;
+        await host.save();
+
+        req.flash('success', 'Password successfully updated. Please log in.');
+        res.redirect('/host/login');
+    } catch (err) {
+        console.error("Reset Error:", err);
+        req.flash('error', err?.message || 'Password must be at least 6 characters and include a special character.');
+        res.redirect('back');
+    }
+};

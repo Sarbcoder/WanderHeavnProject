@@ -61,5 +61,20 @@ router.get("/user/bookings", isLoggedIn, async (req, res) => {
     }
 });
 
+router.get('/users/forgot-password', (req, res) => {
+    res.render('users/forgot-password'); // Render forgot password form
+});
+router.post('/users/forgot-password', userController.forgotPassword);
+
+// Show OTP Verification Form (Step 2)
+router.get('/users/verify-otp', userController.showVerifyOtpForm);
+router.post('/users/verify-otp', userController.verifyOtp);
+
+// Reset Password (Step 3)
+router.get('/users/reset-password/:userId', (req, res) => {
+    res.render('users/reset-password', { userId: req.params.userId }); // Render password reset form
+});
+router.post('/users/reset-password', userController.resetPassword);
+
 
 module.exports = router;

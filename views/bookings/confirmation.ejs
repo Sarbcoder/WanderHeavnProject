@@ -40,3 +40,24 @@
     </div>
 <br>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Only attempt speech synthesis if the API is supported
+        if ('speechSynthesis' in window) {
+            const guestName = "<%= booking.guest ? booking.guest.username : 'Guest' %>";
+            const message = `Congratulations ${guestName}, your booking is confirmed`;
+
+            const speech = new SpeechSynthesisUtterance(message);
+            speech.lang = 'en-US';  // Set language
+            speech.pitch = 1;  // Set pitch
+            speech.rate = 1;  // Set rate
+
+            // Speak the message after a slight delay
+            setTimeout(function() {
+                window.speechSynthesis.speak(speech);
+            }, 100);
+        } else {
+            console.log("Speech synthesis not supported in this browser.");
+        }
+    });
+</script>
