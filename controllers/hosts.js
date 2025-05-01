@@ -419,7 +419,7 @@ module.exports.forgotPassword = async (req, res) => {
     await tranEmailApi.sendTransacEmail(sendSmtpEmail);
 
     req.flash('success', 'OTP sent to your email.');
-    res.redirect('/hosts/verify-otp');
+    res.redirect('/host/verify-otp');
 };
 
 // Step 2: Show OTP Verification Form

@@ -16,7 +16,7 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
 const Host = require("./models/host.js");     // Added Host model
 const Admin = require("./models/admin");
-
+const Help=require("./models/help.js");
 // Routes
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
@@ -25,7 +25,7 @@ const adminRoutes = require("./routes/admin");
 const hostRoutes = require("./routes/host");
 const bookingRoutes = require('./routes/booking.js');
 const staticRoutes = require('./routes/static');
-
+const indexRouter = require('./routes/index')
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderheavn";
 
 async function main() {
@@ -201,6 +201,7 @@ app.use("/admin", adminRoutes);
 app.use("/host", hostRoutes);
 app.use('/bookings', bookingRoutes); // so POST /bookings/cleanup works
 
+app.use('/', indexRouter); // 
 // Error Handling
 app.all("*", (req, res) => {
   res.status(404).render("error/404");
